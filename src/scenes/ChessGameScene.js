@@ -76,7 +76,7 @@ class ChessGameScene extends Phaser.Scene {
         this.physics.add.overlap(this.player, this.kings, this.collectKing, null, this);
         this.physics.add.overlap(this.player, this.knights, this.collectKnight, null, this);
 
-        this.startText = this.add.text(10, 50, 'Come to your senses and escape back to reality!', { align: 'center', fontSize: '20px', fill: '#ffffff' });
+        this.startText = this.add.text(10, 50, 'Escape back to reality. USE ARROW KEYS TO START.', { align: 'center', fontSize: '20px', fill: '#ffffff' });
         this.startText.setScrollFactor(0);
     }
 
