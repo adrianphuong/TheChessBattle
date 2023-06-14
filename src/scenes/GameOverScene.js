@@ -12,6 +12,7 @@ class GameOverScene extends Phaser.Scene {
         this.add.text(275, 400, 'Press R to restart', { fontSize: '24px', fill: '#fff' });
 
         this.input.keyboard.on('keydown-R', () => {
+            this.scene.stop('GameOverScene');
             this.scene.start('ChessGameScene');
         });
     }

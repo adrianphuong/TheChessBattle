@@ -139,7 +139,7 @@ class ChessGameScene extends Phaser.Scene {
 
         this.startText = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, 'Escape back to reality. USE ARROW KEYS TO START. HOLD SPACE TO ATTACK', {
             align: 'center',
-            fontSize: '20px',
+            fontSize: '15px',
             fill: '#ffffff',
             fontStyle: 'bold',
             shadow: {
@@ -242,6 +242,7 @@ class ChessGameScene extends Phaser.Scene {
 
     enterPortal(player, portal) {
         this.tp.play();
+        this.gameStarted = false;
         this.scene.start('WinScene');
     }
 
@@ -310,8 +311,10 @@ class ChessGameScene extends Phaser.Scene {
         }
     
         Phaser.Actions.Call(this.deathPieces.getChildren(), function (deathPiece) {
-            let direction = new Phaser.Math.Vector2(this.player.x - deathPiece.x, this.player.y - deathPiece.y).normalize();
-            deathPiece.setVelocity(direction.x * 50, direction.y * 50);
+            if (!deathPiece.isDead) { 
+                let direction = new Phaser.Math.Vector2(this.player.x - deathPiece.x, this.player.y - deathPiece.y).normalize();
+                deathPiece.setVelocity(direction.x * 50, direction.y * 50);
+            }
         }, this);
     
         this.backgrounds.forEach((bg) => {
@@ -373,7 +376,7 @@ class ChessGameScene extends Phaser.Scene {
                 this.health -= .1; // Reduce player health by 10
                 this.updateHealthBar();
                 if (this.health <= 0) { // If player's health drops to zero
-                    this.physics.pause(); // Pause the game
+                    this.gameStarted = false;
                     this.scene.start('GameOverScene'); // Start the GameOverScene
                 }
             }
