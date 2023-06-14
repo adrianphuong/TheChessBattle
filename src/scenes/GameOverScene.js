@@ -3,9 +3,13 @@ class GameOverScene extends Phaser.Scene {
         super('GameOverScene');
     }
 
+    preload() {
+        this.load.image('over','./assets/over.png');
+    }
+
     create() {
-        this.add.text(300, 300, 'Game Over', { fontSize: '32px', fill: '#fff' });
-        this.add.text(300, 350, 'Press R to restart', { fontSize: '24px', fill: '#fff' });
+        this.add.image(400,300, 'over');
+        this.add.text(275, 400, 'Press R to restart', { fontSize: '24px', fill: '#fff' });
 
         this.input.keyboard.on('keydown-R', () => {
             this.scene.start('ChessGameScene');

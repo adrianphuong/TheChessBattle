@@ -3,9 +3,13 @@ class WinScene extends Phaser.Scene {
         super('WinScene');
     }
 
+    preload() {
+        this.load.image('escapetext','./assets/escape.png');
+    }
+
     create() {
-        this.add.text(300, 300, 'You Won', { fontSize: '32px', fill: '#fff' });
-        this.add.text(300, 350, 'Press R to restart', { fontSize: '24px', fill: '#fff' });
+        this.add.image(400,300, 'escapetext');
+        this.add.text(275, 400, 'Press R to restart', { fontSize: '24px', fill: '#fff' });
 
         this.input.keyboard.on('keydown-R', () => {
             this.scene.start('ChessGameScene');
