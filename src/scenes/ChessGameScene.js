@@ -33,19 +33,15 @@ class ChessGameScene extends Phaser.Scene {
         this.load.audio('powerUp', 'assets/powerUp.wav');
         this.load.audio('portaltp', 'assets/portal.wav');
         this.load.audio("swoosh", 'assets/sword.mp3');
+        this.load.audio("end", 'assets/hitHurt.wav');
+        this.load.audio("ghost", 'assets/ghost.mp3');
         
     }
 
     create() {
         this.health = 100;
-        // The background is now set to follow the player
         this.keysCollected = 0;
-        this.backgrounds = [];
-        for (let i = 0; i < 2; i++) {
-            let bg = this.add.tileSprite(i * 800, 0, 800, 600, 'background');
-            bg.setOrigin(0, 0);
-            this.backgrounds.push(bg);
-        }
+        this.background = this.add.tileSprite(0, 0, 800, 600, 'background').setOrigin(0, 0)
         this.bgMusic = this.sound.add('bgMusic', { loop: true , volume: .2});   
         this.bgMusic.play();
         
@@ -53,8 +49,10 @@ class ChessGameScene extends Phaser.Scene {
         this.power = this.sound.add('powerUp');
         this.tp = this.sound.add('portaltp');
         this.sword = this.sound.add('swoosh', {volume: .2});
+        this.over = this.sound.add('end', {volume: 0.4});
+        this.ghost = this.sound.add('ghost', {volume: 0.2});
 
-        this.player = this.physics.add.sprite(400, 300, 'knight', 0);
+        this.player = this.physics.add.sprite(400, 300, 'knight', 0).setOrigin(0.5, 0.5);
         this.player.hasAttacked = false;
         // Idle Anim
         this.anims.create({
@@ -98,7 +96,19 @@ class ChessGameScene extends Phaser.Scene {
 
         this.player.setCollideWorldBounds(true);
         this.keys = this.physics.add.group();
-        this.keyText = this.add.text(10, 10, 'Keys: 0', { fontSize: '16px', fill: '#000' });
+        this.keyText = this.add.text(700, 10, 'Keys: 0/10', { 
+        fontSize: '15px',
+        fill: '#ffffff',
+        fontStyle: 'bold',
+        shadow: {
+            offsetX: 2,
+            offsetY: 2,
+            color: '#000000',
+            blur: 4,
+            stroke: true,
+            fill: true
+        }
+        });
         this.spawnKey(); // Only spawn one key at the start
         this.physics.add.overlap(this.player, this.keys, this.collectKey, null, this);
 
@@ -121,9 +131,8 @@ class ChessGameScene extends Phaser.Scene {
         }
 
         // Spawn power-ups less frequently
-        this.time.addEvent({ delay: 5000, callback: this.spawnBishop, callbackScope: this, loop: true });
-        this.time.addEvent({ delay: 15000, callback: this.spawnKnight, callbackScope: this, loop: true });
-        this.time.addEvent({ delay: 30000, callback: this.spawnKing, callbackScope: this, loop: true });
+        this.time.addEvent({ delay: 20000, callback: this.spawnBishop, callbackScope: this, loop: true });
+        this.time.addEvent({ delay: 12000, callback: this.spawnKing, callbackScope: this, loop: true });
 
         this.bishops = this.physics.add.group();
         this.kings = this.physics.add.group();
@@ -208,11 +217,11 @@ class ChessGameScene extends Phaser.Scene {
     collectKey(player, key) {
         key.disableBody(true, true);
         this.keysCollected++;
-        this.keyText.setText('Keys: ' + this.keysCollected);
+        this.keyText.setText('Keys: ' + this.keysCollected + '/10');
         // Play key sound
         this.sound.play('keySound');
 
-        if (this.keysCollected >= 4) {
+        if (this.keysCollected >= 10) {
             this.portal.setVisible(true);
             this.portal.body.enable = true;
             // Get the camera
@@ -247,11 +256,15 @@ class ChessGameScene extends Phaser.Scene {
     }
 
     spawnBishop() {
-        this.bishops.create(Phaser.Math.Between(0, this.scale.width), Phaser.Math.Between(0, this.scale.height), 'bishop');
+        if (this.gameStarted) {
+            this.bishops.create(Phaser.Math.Between(0, this.scale.width), Phaser.Math.Between(0, this.scale.height), 'bishop');
+        }
     }
 
     spawnKing() {
-        this.kings.create(Phaser.Math.Between(0, this.scale.width), Phaser.Math.Between(0, this.scale.height), 'king');
+        if (this.gameStarted) {
+            this.kings.create(Phaser.Math.Between(0, this.scale.width), Phaser.Math.Between(0, this.scale.height), 'king');
+        }
     }
 
     update(time) {
@@ -316,25 +329,6 @@ class ChessGameScene extends Phaser.Scene {
                 deathPiece.setVelocity(direction.x * 50, direction.y * 50);
             }
         }, this);
-    
-        this.backgrounds.forEach((bg) => {
-            if (this.player.x > bg.x + 800) {
-                bg.x += 800 * 2;
-            } else if (this.player.x < bg.x - 800) {
-                bg.x -= 800 * 2;
-            }
-        });
-    }
-    
-
-    // New method to update the timer
-    updateTime() {
-        this.timeRemaining--;
-        this.timeText.setText('Time Remaining: ' + this.timeRemaining);
-        if(this.timeRemaining <= 0) {
-            this.physics.pause();
-            this.scene.start('GameOverScene');
-        }
     }
 
     hitDeath(player, deathPiece) {
@@ -356,6 +350,9 @@ class ChessGameScene extends Phaser.Scene {
     
                     // Check if the deathPiece is already dead
                     if (!deathPiece.isDead) {
+                        if(!this.ghost.isPlaying) {
+                            this.ghost.play();
+                        }
                         deathPiece.isDead = true; // Mark the deathPiece as dead
     
                         // Fade out and disable death after a delay
@@ -377,6 +374,7 @@ class ChessGameScene extends Phaser.Scene {
                 this.updateHealthBar();
                 if (this.health <= 0) { // If player's health drops to zero
                     this.gameStarted = false;
+                    this.over.play();
                     this.scene.start('GameOverScene'); // Start the GameOverScene
                 }
             }
