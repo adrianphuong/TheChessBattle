@@ -1,3 +1,2 @@
-# CMPM 120
-This is my final project WIP from the movie the Seventh Seal. You collect keys and try to get back into reality (currently works but is boring). There are chess pieces that give you power ups: King - Health, Bishop - Speed, Knight - Temporary Invincibility.
-Death chases you as you try and make your way back to reality (by collecting 4 coins and a portal will open)
+# The Chess Battle
+Game based on the Seventh Seal. Play the game as a knight (Antonious Block) and fend off death spirits. Collect 10 keys and exit through the portal.
